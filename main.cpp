@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "brainfork_parser.h"
+#include "brainfork_executor.h"
 
 int main(int argc, char *argv[]) {
     if(argc != 2) {
