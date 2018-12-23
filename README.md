@@ -1,2 +1,2 @@
-# BrainFork-Interpreper
-BrainFork Interpreper with 16bit words
+# BrainFork-Interpreter
+BrainFork Interpreter with 16bit words
