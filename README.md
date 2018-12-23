@@ -17,4 +17,5 @@ BrainFork Interpreter with 16bit words
 
 ## TODO
 1.  Реализовать оператор "Y"
-2. ...
+2.  Анализ синтаксиса
+3. ...
