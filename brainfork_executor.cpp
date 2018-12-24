@@ -12,7 +12,7 @@
 #include "brainfork_executor.h"
 
 
-BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {};
+BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {}
 
 void BrainforkExecutor::Execute(const std::string &filename) {
     ReadFile(filename);
