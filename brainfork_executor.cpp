@@ -38,8 +38,6 @@ void BrainforkExecutor::ReadFile(const std::string &filename) {
 void BrainforkExecutor::Optimize() {
     if(!mInstructions)
         return;
-    if(!mMemory)
-        mMemory = new wchar_t[30000]{0};
     if(!mOperations)
         mOperations = std::make_shared<std::list<Operation>>();
 
@@ -112,7 +110,7 @@ void BrainforkExecutor::Operate() {
         return;
     if(!mMemory)
         mMemory = new wchar_t[30000]{0};
-    std::stack<std::pair<std::list<std::pair<OperationType, int>>::iterator, wchar_t>> loops;
+    std::stack<std::pair<std::list<Operation>::iterator, wchar_t>> loops;
     for(auto iter = mOperations->begin(); iter != mOperations->end(); ++iter) {
         std::pair<OperationType, int> instruction = *iter;
         if(!loops.empty() && !loops.top().second
