@@ -39,7 +39,7 @@ void BrainforkExecutor::Optimize() {
     if(!mInstructions)
         return;
     if(!mMemory)
-        mMemory = new wchar_t[30000]{0};
+        mMemory = new uint16_t[30000]{0};
     if(!mOperations)
         mOperations = std::make_shared<std::list<Operation>>();
 
@@ -111,8 +111,8 @@ void BrainforkExecutor::Operate() {
     if(!mOperations)
         return;
     if(!mMemory)
-        mMemory = new wchar_t[30000]{0};
-    std::stack<std::pair<std::list<std::pair<OperationType, int>>::iterator, wchar_t>> loops;
+        mMemory = new uint16_t[30000]{0};
+    std::stack<std::pair<std::list<std::pair<OperationType, int>>::iterator, uint16_t >> loops;
     for(auto iter = mOperations->begin(); iter != mOperations->end(); ++iter) {
         std::pair<OperationType, int> instruction = *iter;
         if(!loops.empty() && !loops.top().second

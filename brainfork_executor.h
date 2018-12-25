@@ -10,7 +10,7 @@
 
 class BrainforkExecutor {
     std::shared_ptr<std::string> mInstructions;
-    wchar_t* mMemory;
+    uint16_t* mMemory;
 
 public:
     BrainforkExecutor();
