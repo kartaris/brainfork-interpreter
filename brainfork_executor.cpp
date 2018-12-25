@@ -112,7 +112,7 @@ void BrainforkExecutor::Operate() {
         return;
     if(!mMemory)
         mMemory = new uint16_t[30000]{0};
-    std::stack<std::pair<std::list<std::pair<OperationType, int>>::iterator, uint16_t >> loops;
+    std::stack<std::pair<std::list<Operation>::iterator, uint16_t>> loops;
     for(auto iter = mOperations->begin(); iter != mOperations->end(); ++iter) {
         std::pair<OperationType, int> instruction = *iter;
         if(!loops.empty() && !loops.top().second
