@@ -6,7 +6,7 @@
 #define BRAINFORK_INTERPRETER_BRAINFORKEXECUTOR_H
 
 #include <memory>
-#include <list>
+#include <vector>
 
 class BrainforkExecutor {
     std::shared_ptr<std::string> mInstructions;
@@ -39,7 +39,7 @@ private:
      *      Например, (SHIFT, -5) - сдвиг влево на 5 ячеек,
      *      (INC, -2) - уменьшить на два значение ячейки
      */
-    std::shared_ptr<std::list<Operation>> mOperations;
+    std::shared_ptr<std::vector<Operation>> mOperations;
     /**
      * Вычитываем файл в instructions
      * @param filename

@@ -7,7 +7,7 @@
 #include <string>
 #include <stack>
 #include <utility>
-#include <list>
+#include <vector>
 
 #include "brainfork_executor.h"
 
@@ -41,7 +41,7 @@ void BrainforkExecutor::Optimize() {
     if(!mMemory)
         mMemory = new uint16_t[30000]{0};
     if(!mOperations)
-        mOperations = std::make_shared<std::list<Operation>>();
+        mOperations = std::make_shared<std::vector<Operation>>();
 
     auto push_operation = [this](const OperationType &o_type, const int& o_value, bool no_repeat = false) {
         if(no_repeat || this->mOperations->empty() || this->mOperations->back().first != o_type) {
@@ -112,7 +112,7 @@ void BrainforkExecutor::Operate() {
         return;
     if(!mMemory)
         mMemory = new uint16_t[30000]{0};
-    std::stack<std::pair<std::list<Operation>::iterator, uint16_t>> loops;
+    std::stack<std::pair<std::vector<Operation>::iterator, uint16_t>> loops;
     for(auto iter = mOperations->begin(); iter != mOperations->end(); ++iter) {
         std::pair<OperationType, int> instruction = *iter;
         if(!loops.empty() && !loops.top().second
