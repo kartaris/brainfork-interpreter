@@ -3,7 +3,12 @@ BrainFork Interpreter with 16bit words
 
 **Пример запуска**:
 
-    $brainfork_interpreter <script_path>
+    $brainfork_interpreter {script_path} {optimize}
+    
+**Параметры запуска**:
+
+1. **{script_path}** - путь к скрипту
+2. **{optimize}** - 1 для включения оптимизаций, 0 для выключения
 
 ## Оптимизации
 1.	Операторы >/< объединены в одну операцию **SHIFT** с направлением("-1" - сдвиг влево, "+1" - сдвиг вправо). Цепочки 

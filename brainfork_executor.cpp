@@ -14,9 +14,9 @@
 
 BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {};
 
-void BrainforkExecutor::Execute(const std::string &filename) {
+void BrainforkExecutor::Execute(const std::string &filename, bool optimize) {
     ReadFile(filename);
-    Optimize();
+    GenerateCode(optimize);
     Operate();
 }
 
@@ -35,7 +35,7 @@ void BrainforkExecutor::ReadFile(const std::string &filename) {
     file.close();
 }
 
-void BrainforkExecutor::Optimize() {
+void BrainforkExecutor::GenerateCode(bool optimize) {
     if(!mInstructions)
         return;
     if(!mMemory)
@@ -43,8 +43,8 @@ void BrainforkExecutor::Optimize() {
     if(!mOperations)
         mOperations = std::make_shared<std::vector<Operation>>();
 
-    auto push_operation = [this](const OperationType &o_type, const int& o_value, bool no_repeat = false) {
-        if(no_repeat || this->mOperations->empty() || this->mOperations->back().first != o_type) {
+    auto push_operation = [this, &optimize](const OperationType &o_type, const int& o_value, bool no_repeat = false) {
+        if(!optimize || no_repeat || this->mOperations->empty() || this->mOperations->back().first != o_type) {
             this->mOperations->push_back(std::make_pair(o_type, o_value));
             return;
         }
@@ -85,8 +85,8 @@ void BrainforkExecutor::Optimize() {
                 push_operation(WRITE, 1, true);
                 break;
             case '[': {
-                // "Вычленяем" операцию обнуления ячейки [+]/[-]
-                if(i + 2 < mInstructions->length() && (*mInstructions)[i+2] == ']') {
+                // "Вычленяем" операцию обнуления ячейки [+]/[-], но только, если включены оптимизации
+                if(optimize && i + 2 < mInstructions->length() && (*mInstructions)[i+2] == ']') {
                     const char& op = (*mInstructions)[i+1];
                     if(op == '+' || op == '-') {
                         push_operation(ZERO, 1);

@@ -20,7 +20,7 @@ public:
      * Запускаем скрипт на выполнение
      * @param filename
      */
-    void Execute(const std::string& filename);
+    void Execute(const std::string& filename, bool optimize = true);
 
 private:
     // Типы операций
@@ -46,9 +46,10 @@ private:
      */
     void ReadFile(const std::string& filename);
     /**
-     * Проанализируем текст скрипта, свернем повторяющиеся операции
+     * Проанализируем текст скрипта, запишем легальные операции в mOperations
+     * @param optimize выделяем операции ZERO и сворачиваем повторы
      */
-    void Optimize();
+    void GenerateCode(bool optimize = true);
     /**
      * Выполним операции из operation
      */
