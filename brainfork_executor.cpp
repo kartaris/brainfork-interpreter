@@ -130,7 +130,7 @@ void BrainforkExecutor::Operate() {
                 break;
             case READ:
                 // Печать значения текущей ячейки
-                std::wcout << *mMemory;
+                std::wcout << (wchar_t)*mMemory;
                 break;
             case WRITE:
                 // Ввод значения в текущую ячейку
