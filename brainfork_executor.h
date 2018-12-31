@@ -32,8 +32,8 @@ private:
         L_END,      // Конец цикла ]
         READ,       // Напечатать значение ячейки .
         WRITE,      // Записать значение в ячейку ,
-        ADD,        // Добавить значение текущей ячейки в ячейку k(с обнулением текущей ячейки) [INC(-1) SHIFT(k) INC(1) SHIFT(-k)],
-        MOVE,       // [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
+        ADD,        // Добавить значение текущей ячейки в ячейку k(с обнулением текущей ячейки) [- SHIFT(k) + SHIFT(-k)]
+        MOVE,       // Переместить значение текущей ячейки в ячейку k [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
         COPY,       // Скопировать значение текущей ячейки в ячейку k [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ -SHIFT(k) + SHIFT(t) + SHIFT(-k-t) ] SHIFT(k+t) MOVE(-k-t)]
 
     };
