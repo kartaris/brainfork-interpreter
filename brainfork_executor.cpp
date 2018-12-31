@@ -17,6 +17,7 @@ BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {};
 void BrainforkExecutor::Execute(const std::string &filename, bool optimize) {
     ReadFile(filename);
     GenerateCode(optimize);
+    std::cout << mOperations->size() << " operations\n";
     Operate();
 }
 
@@ -42,17 +43,19 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
         mMemory = new uint16_t[30000]{0};
     if(!mOperations)
         mOperations = std::make_shared<std::vector<Operation>>();
-
-    auto push_operation = [this, &optimize](const OperationType &o_type, const int& o_value, bool no_repeat = false) {
-        if(!optimize || no_repeat || this->mOperations->empty() || this->mOperations->back().first != o_type) {
-            this->mOperations->push_back(std::make_pair(o_type, o_value));
+    auto in_loop_operations = std::stack<std::vector<Operation>>();
+    auto push_operation = [this, &optimize, &in_loop_operations](const OperationType &o_type,
+            const int& o_value, bool no_repeat = false) {
+        auto& operations = optimize && !in_loop_operations.empty() ? in_loop_operations.top() : *(this->mOperations);
+        if(!optimize || no_repeat || operations.empty() || operations.back().first != o_type) {
+            operations.emplace_back(std::make_pair(o_type, o_value));
             return;
         }
         if(o_type == ZERO)
             return;
-        this->mOperations->back().second += o_value;
-        if(!this->mOperations->back().second) {
-            this->mOperations->pop_back();
+        operations.back().second += o_value;
+        if(!operations.back().second) {
+            operations.pop_back();
         }
     };
 
@@ -94,11 +97,29 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
                         break;
                     }
                 }
+                in_loop_operations.emplace();
                 push_operation(L_BEG, 1, true);
             }
             break;
             case ']':
-                push_operation(L_END, 1, true);
+                {
+                    push_operation(L_END, 1, true);
+                    auto top_operations = in_loop_operations.top();
+                    in_loop_operations.pop();
+                    if(IsAdd(top_operations))
+                        push_operation(ADD, top_operations[2].second, true);
+                    else if(IsMove(top_operations))
+                        push_operation(MOVE, top_operations[1].second, true);
+                    else if(IsCopy(top_operations))
+                        push_operation(COPY, top_operations[1].second, true);
+                    else {
+                        auto &current_operations = (in_loop_operations.empty() ? *mOperations : in_loop_operations.top());
+                        current_operations.insert(
+                                current_operations.end(),
+                                top_operations.begin(),
+                                top_operations.end());
+                    }
+                }
                 break;
             default:
                 break;
@@ -136,6 +157,23 @@ void BrainforkExecutor::Operate() {
                 // Ввод значения в текущую ячейку
                 std::wcin >> *mMemory;
                 break;
+            case ADD:
+                {
+                    *(mMemory + instruction.second) += *mMemory;
+                    *mMemory = 0;
+                }
+                break;
+            case MOVE:
+                {
+                    *(mMemory + instruction.second) = *mMemory;
+                    *mMemory = 0;
+                }
+                break;
+            case COPY:
+            {
+                *(mMemory + instruction.second) = *mMemory;
+            }
+                break;
             case L_BEG:
                 // Начало цикла
                 loops.push(std::make_pair(iter, *mMemory));
@@ -162,4 +200,64 @@ void BrainforkExecutor::Operate() {
         }
     }
     delete mMemory;
+}
+
+bool BrainforkExecutor::IsAdd(const std::vector<Operation>& loop) {
+    // [INC(-1) SHIFT(k) INC(1) SHIFT(-k)]
+    if(loop.size() != 6)
+        return false;
+    if(loop[1].first != INC || loop[3].first != INC)
+        return false;
+    if(loop[1].second != -1 || loop[3].second != 1)
+        return false;
+    if(loop[2].first != SHIFT || loop[4].first != SHIFT)
+        return false;
+    return loop[2].second == -(loop[4].second);
+}
+
+bool BrainforkExecutor::IsMove(const std::vector<Operation>& loop) {
+    // [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
+    if(loop.size() != 6)
+        return false;
+    if(loop[2].first != ZERO)
+        return false;
+    if(loop[5].first != ADD)
+        return false;
+    if(loop[1].first != SHIFT || loop[3].first != SHIFT)
+        return false;
+    return loop[1].second == -(loop[3].second) && loop[1].second == loop[5].second;
+}
+
+bool BrainforkExecutor::IsCopy(const std::vector<Operation>& loop) {
+    // [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ *7- *8SHIFT(k) *9+ SHIFT(t) *11+ *12SHIFT(-k-t) ] *14SHIFT(k+t) MOVE(-k-t)]
+    if(loop.size() != 17)
+        return false;
+    OperationType mask[] = {L_BEG,
+                            SHIFT,
+                            ZERO,
+                            SHIFT,
+                            ZERO,
+                            SHIFT,
+                            L_BEG,
+                            INC,
+                            SHIFT,
+                            INC,
+                            SHIFT,
+                            INC,
+                            SHIFT,
+                            L_END,
+                            SHIFT,
+                            MOVE,
+                            L_END};
+    for(size_t i = 1; i < 16; ++i) {
+        if(loop[i].first != mask[i])
+            return false;
+    }
+    int k = loop[1].second;
+    int t = loop[3].second;
+    if(loop[5].second != -k-t || loop[8].second != k
+    || loop[10].second != t || loop[12].second != -k-t
+    || loop[14].second != k+t || loop[15].second != -k-t )
+        return false;
+    return loop[7].second == -1 || loop[9].second == 1 || loop[11].second == 1;
 }

@@ -31,7 +31,11 @@ private:
         L_BEG,      // Начало цикла [
         L_END,      // Конец цикла ]
         READ,       // Напечатать значение ячейки .
-        WRITE       // Записать значение в ячейку ,
+        WRITE,      // Записать значение в ячейку ,
+        ADD,        // Добавить значение текущей ячейки в ячейку k(с обнулением текущей ячейки) [INC(-1) SHIFT(k) INC(1) SHIFT(-k)],
+        MOVE,       // [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
+        COPY,       // Скопировать значение текущей ячейки в ячейку k [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ -SHIFT(k) + SHIFT(t) + SHIFT(-k-t) ] SHIFT(k+t) MOVE(-k-t)]
+
     };
     typedef std::pair<OperationType, int> Operation;
     /**
@@ -54,6 +58,24 @@ private:
      * Выполним операции из operation
      */
     void Operate();
+    /**
+     * Проверим цикл на реализацию алгоритма ADD
+     * @param loop вектор с циклом для проверки
+     * @return
+     */
+    bool IsAdd(const std::vector<Operation>& loop);
+    /**
+     * Проверим цикл на реализацию алгоритма MOVE
+     * @param loop
+     * @return
+     */
+    bool IsMove(const std::vector<Operation>& loop);
+    /**
+     * Проверим цикл на реализацию алгоритма COPY
+     * @param loop
+     * @return
+     */
+    bool IsCopy(const std::vector<Operation>& loop);
 };
 
 
