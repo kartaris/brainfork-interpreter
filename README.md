@@ -27,7 +27,10 @@ BrainFork Interpreter with 16bit words
 выделен в операцию **MOVE**;
 6.  Алгоритм копирования значения текущей ячейки 
     [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ -SHIFT(k) + SHIFT(t) + SHIFT(-k-t) ] SHIFT(k+t) MOVE(-k-t)]
-выделен в операцию **COPY**.  
+выделен в операцию **COPY**;
+7.  Алгоритм умножения
+    [- SHIFT(k) INC(b) SHIFT(-k)]
+выделен в операцию **MULT**.  
 
 
 ## TODO

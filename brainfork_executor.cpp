@@ -97,13 +97,16 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
                         break;
                     }
                 }
-                in_loop_operations.emplace();
+                if(optimize)
+                    in_loop_operations.emplace();
                 push_operation(L_BEG, 1, true);
             }
             break;
             case ']':
                 {
                     push_operation(L_END, 1, true);
+                    if(!optimize)
+                        break;
                     auto top_operations = in_loop_operations.top();
                     in_loop_operations.pop();
                     if(IsAdd(top_operations))
