@@ -108,6 +108,8 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
                     in_loop_operations.pop();
                     if(IsAdd(top_operations))
                         push_operation(ADD, top_operations[2].second, true);
+                    else if(IsMult(top_operations))
+                        push_operation(MULT, top_operations[3].second, true);
                     else if(IsMove(top_operations))
                         push_operation(MOVE, top_operations[1].second, true);
                     else if(IsCopy(top_operations))
@@ -162,6 +164,12 @@ void BrainforkExecutor::Operate() {
                     *(mMemory + instruction.second) += *mMemory;
                     *mMemory = 0;
                 }
+                break;
+            case MULT:
+            {
+                *(mMemory + instruction.second) = *mMemory;
+                *mMemory = 0;
+            }
                 break;
             case MOVE:
                 {
@@ -232,23 +240,9 @@ bool BrainforkExecutor::IsCopy(const std::vector<Operation>& loop) {
     // [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ *7- *8SHIFT(k) *9+ SHIFT(t) *11+ *12SHIFT(-k-t) ] *14SHIFT(k+t) MOVE(-k-t)]
     if(loop.size() != 17)
         return false;
-    OperationType mask[] = {L_BEG,
-                            SHIFT,
-                            ZERO,
-                            SHIFT,
-                            ZERO,
-                            SHIFT,
-                            L_BEG,
-                            INC,
-                            SHIFT,
-                            INC,
-                            SHIFT,
-                            INC,
-                            SHIFT,
-                            L_END,
-                            SHIFT,
-                            MOVE,
-                            L_END};
+    OperationType mask[] = {L_BEG, SHIFT,   ZERO,   SHIFT,  ZERO,   SHIFT,
+                            L_BEG, INC,     SHIFT,  INC,    SHIFT,  INC,
+                            SHIFT, L_END,   SHIFT,  MOVE,   L_END};
     for(size_t i = 1; i < 16; ++i) {
         if(loop[i].first != mask[i])
             return false;
@@ -260,4 +254,15 @@ bool BrainforkExecutor::IsCopy(const std::vector<Operation>& loop) {
     || loop[14].second != k+t || loop[15].second != -k-t )
         return false;
     return loop[7].second == -1 || loop[9].second == 1 || loop[11].second == 1;
+}
+
+bool BrainforkExecutor::IsMult(const std::vector<Operation>& loop) {
+    // [- SHIFT(k) INC(b) SHIFT(-k)]
+    if(loop[1].first != INC || loop[1].second != -1)
+        return false;
+    if(loop[2].first != SHIFT || loop[4].first != SHIFT)
+        return false;
+    if(loop[2].second != -loop[4].first)
+        return false;
+    return loop[3].first == INC;
 }

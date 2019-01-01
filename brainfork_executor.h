@@ -33,9 +33,9 @@ private:
         READ,       // Напечатать значение ячейки .
         WRITE,      // Записать значение в ячейку ,
         ADD,        // Добавить значение текущей ячейки в ячейку k(с обнулением текущей ячейки) [- SHIFT(k) + SHIFT(-k)]
+        MULT,       // Умножение [- SHIFT(k) INC(b) SHIFT(-k)]
         MOVE,       // Переместить значение текущей ячейки в ячейку k [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
         COPY,       // Скопировать значение текущей ячейки в ячейку k [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ -SHIFT(k) + SHIFT(t) + SHIFT(-k-t) ] SHIFT(k+t) MOVE(-k-t)]
-
     };
     typedef std::pair<OperationType, int> Operation;
     /**
@@ -76,6 +76,12 @@ private:
      * @return
      */
     bool IsCopy(const std::vector<Operation>& loop);
+    /**
+     * Проверим цикл на реализацию алгоритма MULT
+     * @param loop
+     * @return
+     */
+    bool IsMult(const std::vector<Operation>& loop);
 };
 
 
