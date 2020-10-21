@@ -2,16 +2,14 @@
 // Created by rust7 on 21.12.2018.
 //
 
-#ifndef BRAINFORK_INTERPRETER_BRAINFORKEXECUTOR_H
-#define BRAINFORK_INTERPRETER_BRAINFORKEXECUTOR_H
+#pragma once
 
 #include <memory>
 #include <vector>
+#include <string>
+
 
 class BrainforkExecutor {
-    std::shared_ptr<std::string> mInstructions;
-    uint16_t* mMemory;
-
 public:
     BrainforkExecutor();
     ~BrainforkExecutor() = default;
@@ -20,7 +18,13 @@ public:
      * Запускаем скрипт на выполнение
      * @param filename
      */
-    void Execute(const std::string& filename, bool optimize = true);
+    bool execute(const std::string& filename, bool optimize = true);
+
+    /**
+     *
+     * @return
+     */
+    std::wstring result();
 
 private:
     // Типы операций
@@ -48,41 +52,42 @@ private:
      * Вычитываем файл в instructions
      * @param filename
      */
-    void ReadFile(const std::string& filename);
+    bool readFile(const std::string& filename);
     /**
      * Проанализируем текст скрипта, запишем легальные операции в mOperations
      * @param optimize выделяем операции ZERO и сворачиваем повторы
      */
-    void GenerateCode(bool optimize = true);
+    void generateCode(bool optimize = true);
     /**
      * Выполним операции из operation
      */
-    void Operate();
+    bool operate();
     /**
      * Проверим цикл на реализацию алгоритма ADD
      * @param loop вектор с циклом для проверки
      * @return
      */
-    bool IsAdd(const std::vector<Operation>& loop);
+    static bool isAdd(const std::vector<Operation>& loop);
     /**
      * Проверим цикл на реализацию алгоритма MOVE
      * @param loop
      * @return
      */
-    bool IsMove(const std::vector<Operation>& loop);
+    static bool isMove(const std::vector<Operation>& loop);
     /**
      * Проверим цикл на реализацию алгоритма COPY
      * @param loop
      * @return
      */
-    bool IsCopy(const std::vector<Operation>& loop);
+    static bool isCopy(const std::vector<Operation>& loop);
     /**
      * Проверим цикл на реализацию алгоритма MULT
      * @param loop
      * @return
      */
-    bool IsMult(const std::vector<Operation>& loop);
+    static bool isMult(const std::vector<Operation>& loop);
+
+    std::shared_ptr<std::string> mInstructions;
+    uint16_t* mMemory;
+    std::wstring mResult;
 };
-
-
-#endif //BRAINFORK_INTERPRETER_BRAINFORKEXECUTOR_H

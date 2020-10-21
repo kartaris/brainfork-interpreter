@@ -4,7 +4,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <stack>
 #include <utility>
 #include <vector>
@@ -14,18 +13,20 @@
 
 BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {};
 
-void BrainforkExecutor::Execute(const std::string &filename, bool optimize) {
-    ReadFile(filename);
-    GenerateCode(optimize);
+bool BrainforkExecutor::execute(const std::string &filename, bool optimize) {
+    mResult.clear();
+    if(!readFile(filename))
+        return false;
+    generateCode(optimize);
     std::cout << mOperations->size() << " operations\n";
-    Operate();
+    return operate();
 }
 
-void BrainforkExecutor::ReadFile(const std::string &filename) {
+bool BrainforkExecutor::readFile(const std::string &filename) {
     std::ifstream file(filename);
     if(!file.is_open()) {
         std::cout << "The specified file can't be opened\n";
-        exit(1);
+        return false;
     }
     if(!mInstructions)
         mInstructions = std::make_shared<std::string>();
@@ -34,9 +35,10 @@ void BrainforkExecutor::ReadFile(const std::string &filename) {
         (*mInstructions) += line;
     }
     file.close();
+    return true;
 }
 
-void BrainforkExecutor::GenerateCode(bool optimize) {
+void BrainforkExecutor::generateCode(bool optimize) {
     if(!mInstructions)
         return;
     if(!mMemory)
@@ -109,13 +111,13 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
                         break;
                     auto top_operations = in_loop_operations.top();
                     in_loop_operations.pop();
-                    if(IsAdd(top_operations))
+                    if(isAdd(top_operations))
                         push_operation(ADD, top_operations[2].second, true);
-                    else if(IsMult(top_operations))
+                    else if(isMult(top_operations))
                         push_operation(MULT, top_operations[3].second, true);
-                    else if(IsMove(top_operations))
+                    else if(isMove(top_operations))
                         push_operation(MOVE, top_operations[1].second, true);
-                    else if(IsCopy(top_operations))
+                    else if(isCopy(top_operations))
                         push_operation(COPY, top_operations[1].second, true);
                     else {
                         auto &current_operations = (in_loop_operations.empty() ? *mOperations : in_loop_operations.top());
@@ -133,11 +135,15 @@ void BrainforkExecutor::GenerateCode(bool optimize) {
     mInstructions.reset();
 }
 
-void BrainforkExecutor::Operate() {
+bool BrainforkExecutor::operate() {
     if(!mOperations)
-        return;
+        return true;
+
     if(!mMemory)
         mMemory = new uint16_t[30000]{0};
+
+    auto memoryHead = mMemory;
+
     std::stack<std::pair<std::vector<Operation>::iterator, uint16_t>> loops;
     for(auto iter = mOperations->begin(); iter != mOperations->end(); ++iter) {
         std::pair<OperationType, int> instruction = *iter;
@@ -156,64 +162,66 @@ void BrainforkExecutor::Operate() {
                 break;
             case READ:
                 // Печать значения текущей ячейки
-                std::wcout << (wchar_t)*mMemory;
+                mResult += (wchar_t)*mMemory;
                 break;
             case WRITE:
                 // Ввод значения в текущую ячейку
                 std::wcin >> *mMemory;
                 break;
             case ADD:
-                {
-                    *(mMemory + instruction.second) += *mMemory;
-                    *mMemory = 0;
-                }
+            {
+                *(mMemory + instruction.second) += *mMemory;
+                *mMemory = 0;
                 break;
+            }
             case MULT:
+            {
+                *(mMemory + instruction.second) *= *mMemory;
+                *mMemory = 0;
+                break;
+            }
+            case MOVE:
             {
                 *(mMemory + instruction.second) = *mMemory;
                 *mMemory = 0;
+                break;
             }
-                break;
-            case MOVE:
-                {
-                    *(mMemory + instruction.second) = *mMemory;
-                    *mMemory = 0;
-                }
-                break;
             case COPY:
             {
                 *(mMemory + instruction.second) = *mMemory;
-            }
                 break;
+            }
             case L_BEG:
                 // Начало цикла
                 loops.push(std::make_pair(iter, *mMemory));
                 break;
             case L_END:
-                // Конец цикла
-                {
-                    if(loops.empty()) {
-                        std::cout << "Incorrect program structure\n";
-                        exit(2);
-                    }
-                    auto pos = loops.top().first;
-                    if(!*mMemory)
-                    {
-                        loops.pop();
-                        break;
-                    }
-                    loops.top().second = *mMemory;
-                    iter = pos;
+            // Конец цикла
+            {
+                if(loops.empty()) {
+                    std::cout << "Incorrect program structure\n";
+                    return false;
                 }
+                auto pos = loops.top().first;
+                if(!*mMemory)
+                {
+                    loops.pop();
+                    break;
+                }
+                loops.top().second = *mMemory;
+                iter = pos;
                 break;
+            }
             default:
                 break;
         }
     }
-    delete mMemory;
+    delete []memoryHead;
+    mMemory = nullptr;
+    return true;
 }
 
-bool BrainforkExecutor::IsAdd(const std::vector<Operation>& loop) {
+bool BrainforkExecutor::isAdd(const std::vector<Operation>& loop) {
     // [INC(-1) SHIFT(k) INC(1) SHIFT(-k)]
     if(loop.size() != 6)
         return false;
@@ -226,7 +234,7 @@ bool BrainforkExecutor::IsAdd(const std::vector<Operation>& loop) {
     return loop[2].second == -(loop[4].second);
 }
 
-bool BrainforkExecutor::IsMove(const std::vector<Operation>& loop) {
+bool BrainforkExecutor::isMove(const std::vector<Operation>& loop) {
     // [SHIFT(k) ZERO SHIFT(-k) ADD(k)]
     if(loop.size() != 6)
         return false;
@@ -239,7 +247,7 @@ bool BrainforkExecutor::IsMove(const std::vector<Operation>& loop) {
     return loop[1].second == -(loop[3].second) && loop[1].second == loop[5].second;
 }
 
-bool BrainforkExecutor::IsCopy(const std::vector<Operation>& loop) {
+bool BrainforkExecutor::isCopy(const std::vector<Operation>& loop) {
     // [SHIFT(k) ZERO SHIFT(t) ZERO SHIFT(-k-t) [ *7- *8SHIFT(k) *9+ SHIFT(t) *11+ *12SHIFT(-k-t) ] *14SHIFT(k+t) MOVE(-k-t)]
     if(loop.size() != 17)
         return false;
@@ -259,7 +267,7 @@ bool BrainforkExecutor::IsCopy(const std::vector<Operation>& loop) {
     return loop[7].second == -1 || loop[9].second == 1 || loop[11].second == 1;
 }
 
-bool BrainforkExecutor::IsMult(const std::vector<Operation>& loop) {
+bool BrainforkExecutor::isMult(const std::vector<Operation>& loop) {
     // [- SHIFT(k) INC(b) SHIFT(-k)]
     if(loop[1].first != INC || loop[1].second != -1)
         return false;
@@ -268,4 +276,8 @@ bool BrainforkExecutor::IsMult(const std::vector<Operation>& loop) {
     if(loop[2].second != -loop[4].first)
         return false;
     return loop[3].first == INC;
+}
+
+std::wstring BrainforkExecutor::result() {
+    return mResult;
 }
