@@ -15,6 +15,7 @@ BrainforkExecutor::BrainforkExecutor() : mMemory(nullptr) {};
 
 bool BrainforkExecutor::execute(const std::string &filename, bool optimize) {
     mResult.clear();
+    mOperations.reset();
     if(!readFile(filename))
         return false;
     generateCode(optimize);

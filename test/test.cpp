@@ -32,10 +32,14 @@ TEST_CASE( "Hello, World!", "[hello-world]" ) {
            "> + .                   print '!'";
     out.close();
     BrainforkExecutor executor;
+
     REQUIRE(executor.execute("hello-world.bfk", false));
     auto unoptimizedResult = executor.result();
+    REQUIRE(unoptimizedResult == L"Hello World!");
+
     REQUIRE(executor.execute("hello-world.bfk"));
     auto optimizedResult = executor.result();
-    REQUIRE(unoptimizedResult == optimizedResult);
     REQUIRE(optimizedResult == L"Hello World!");
+
+    REQUIRE(unoptimizedResult == optimizedResult);
 }
